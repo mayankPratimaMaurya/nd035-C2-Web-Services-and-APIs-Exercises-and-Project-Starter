@@ -5,9 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -148,6 +146,45 @@ public class CarControllerTest {
                 .andExpect(status().isCreated());
 
         mvc.perform(delete(new URI("/cars/1"))).andExpect(status().isNoContent());
+
+    }
+
+    /**
+     * Tests the update operation for a single car by ID.
+     * @throws Exception if the update operation for a single car fails
+     */
+    @Test
+    public void updateCar() throws Exception {
+        createNewCar();
+        updateExistingCar();
+    }
+
+
+
+    private void createNewCar() throws Exception {
+        Car car = getCar();
+        mvc.perform(
+                post(new URI("/cars"))
+                        .content(json.write(car).getJson())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isCreated());
+    }
+
+    private void updateExistingCar() throws Exception {
+        Car car = getCar();
+        Details detail = car.getDetails();
+        detail.setModel("tesla");
+        car.setDetails(detail);
+        car.setCondition(Condition.NEW);
+
+        car.setLocation(new Location(15.00, -11.00));
+
+        mvc.perform(put(new URI("/cars/1"))
+                .content(json.write(car).getJson())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk());
 
     }
 
